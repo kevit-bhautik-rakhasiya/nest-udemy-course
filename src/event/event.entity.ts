@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Attendee } from './attendee.entity';
+
+export enum AttendeeAnswerEnum {
+  Accepted = 1,
+  Maybe,
+  Rejected,
+}
 
 @Entity()
 export class Event {
@@ -16,4 +23,18 @@ export class Event {
 
   @Column()
   address: string;
+
+  @OneToMany(
+    () => Attendee,
+    (attendee) => attendee.event,
+    // { eager: true }
+    { cascade: true },
+  )
+  attendees: Attendee[];
+
+  @Column('enum', {
+    enum: AttendeeAnswerEnum,
+    default: AttendeeAnswerEnum.Accepted,
+  })
+  atttendes: AttendeeAnswerEnum;
 }

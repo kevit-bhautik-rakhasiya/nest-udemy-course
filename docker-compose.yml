@@ -12,7 +12,7 @@ services:
       
   postgres:
     image: postgres:13.1
-    restart: a
+    restart: always
     environment:
       POSTGRES_PASSWORD: example
     ports:
