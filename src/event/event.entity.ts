@@ -1,11 +1,12 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Attendee } from './attendee.entity';
-
-export enum AttendeeAnswerEnum {
-  Accepted = 1,
-  Maybe,
-  Rejected,
-}
+import { User } from 'src/auth/user.entity';
 
 @Entity()
 export class Event {
@@ -32,9 +33,12 @@ export class Event {
   )
   attendees: Attendee[];
 
-  @Column('enum', {
-    enum: AttendeeAnswerEnum,
-    default: AttendeeAnswerEnum.Accepted,
-  })
-  atttendes: AttendeeAnswerEnum;
+  @ManyToOne(() => User, (user) => user.organized)
+  organizer: User;
+
+  //below all the properties are virtual not store in the database
+  attendeeCount?: number;
+  attendeeAccepted?: number;
+  attendeeMaybe?: number;
+  attendeeRejected?: number;
 }

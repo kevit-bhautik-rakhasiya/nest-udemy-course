@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AttendeeAnswerEnum, Event } from './event.entity';
-import { Repository } from 'typeorm';
+import { Event } from './event.entity';
+import { DeleteResult, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AttendeeAnswerEnum } from './attendee.entity';
+import { ListEvents, WhenEventFilter } from './input/list.events';
+import { paginate, PaginateOptions } from './pagination/paginator';
 
 @Injectable()
 export class EventService {
@@ -47,13 +50,59 @@ export class EventService {
       );
   }
 
+  private async getEventsWithAttendeeCountFilter(filter: ListEvents) {
+    let query = this.getEventsBaseQuery();
+
+    if (!filter) {
+      return query;
+    }
+
+    if (filter.when) {
+      if (filter.when == WhenEventFilter.Today) {
+        query = query.andWhere(
+          `e.when >= CURDATE() AND e.when <= CURDATE() + INTERVAL 1 DAY`,
+        );
+      }
+      if (filter.when == WhenEventFilter.Tommorow) {
+        query = query.andWhere(
+          `e.when >=CURDATE() + INTERVAL 1 DAY AND e.when<=CURDATE() + INTERVAL 2 DAY`,
+        );
+      }
+      if (filter.when == WhenEventFilter.ThisWeek) {
+        query = query.andWhere(`YEARWEEK(e.when ,1 )= YEARWEEK(CURDATE() , 1)`);
+      }
+      if (filter.when == WhenEventFilter.NextWeek) {
+        query = query.andWhere(
+          `YEARWEEK(e.when ,1 )=YEARWEEK(CURDATE() , 1)+1`,
+        );
+      }
+    }
+    return query;
+  }
+
+  public async getEventsWithAttendeeCountFilterdPagination(
+    filter: ListEvents,
+    paginationOptions: PaginateOptions,
+  ) {
+    return await paginate(
+      await this.getEventsWithAttendeeCountFilter(filter),
+      paginationOptions,
+    );
+  }
+
   public async getEvent(id: number): Promise<Event> {
     const event = await this.getAttendeCountBaseQuary().andWhere('e.id = :id', {
       id,
     });
-
     this.logger.warn(event.getSql());
-
     return await event.getOne();
+  }
+
+  public async deleteEvent(id: number): Promise<DeleteResult> {
+    return this.eventRepositary
+      .createQueryBuilder('e')
+      .delete()
+      .where('id = :id', { id })
+      .execute();
   }
 }
