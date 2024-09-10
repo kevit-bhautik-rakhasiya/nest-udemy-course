@@ -21,7 +21,6 @@ import {
 } from '@nestjs/common';
 import { CreateEventDto } from './input/create-event.dto';
 import { UpdateEventDto } from './input/update-event.dto';
-import { Event } from './event.entity';
 import { EventService } from './event.sevice';
 import { ListEvents } from './input/list.events';
 import { User } from 'src/auth/user.entity';
