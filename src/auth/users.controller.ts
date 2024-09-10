@@ -39,7 +39,7 @@ export class UserController {
 
     return {
       ...(await this.userRepository.save(user)),
-      token: await this.authService.getjwtTokenForUser(user),
+      token: this.authService.getjwtTokenForUser(user),
     };
   }
 }
